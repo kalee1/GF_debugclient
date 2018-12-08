@@ -20,7 +20,7 @@ public class UdpServer implements Runnable{
                 DatagramPacket datagramPacket = new DatagramPacket(
                         message.getBytes(),
                         message.length(),
-                        InetAddress.getByName("127.0.0.1"),
+                        InetAddress.getByName("192.168.11.139"),
                         clientPort
                 );
                 serverSocket.send(datagramPacket);
