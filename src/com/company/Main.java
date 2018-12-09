@@ -17,8 +17,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
 public class Main extends Application {
-    public static double WIDTH = 1080;
-    public static double HEIGHT = 1080;
+    public static double WIDTH = 1000;
+    public static double HEIGHT = 1000;
     public static final double ACTUAL_FIELD_SIZE = 358.8;
     //launches
     public static void main(String[] args){
@@ -79,7 +79,7 @@ public class Main extends Application {
 
 
         try {
-            Image image = new Image(new FileInputStream("C:/RoverRuckus/Debug Client/field.png"));
+            Image image = new Image(new FileInputStream(System.getProperty("user.dir") + "/field.png"));
             gc.drawImage(image,0,0,fieldSizePixels,fieldSizePixels);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -88,7 +88,8 @@ public class Main extends Application {
     }
 
     private void drawRobot(GraphicsContext gc) {
-        double robotRadius = 18.0 * 2.54 / 2.0;
+        //robot radius is half the diagonal length
+        double robotRadius = Math.sqrt(2) * 18.0 * 2.54 / 2.0;
         double robotX = MessageProcessing.getRobotX();
         double robotY = MessageProcessing.getRobotY();
         double robotAngle = MessageProcessing.getRobotAngle();
