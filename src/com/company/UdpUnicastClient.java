@@ -4,12 +4,16 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
+import java.util.ArrayList;
+
 //gottteee
 public class UdpUnicastClient implements Runnable {
     private final int port;
 
+    MessageProcessing myMessageProcessor;
     public UdpUnicastClient(int port) {
         this.port = port;
+        myMessageProcessor = new MessageProcessing();
     }
 
     @Override
@@ -23,6 +27,7 @@ public class UdpUnicastClient implements Runnable {
                 clientSocket.receive(datagramPacket);
 
                 String receivedMessage = new String(datagramPacket.getData());
+                myMessageProcessor.processMessage(receivedMessage);
                 System.out.println(receivedMessage);
             }
         } catch (SocketException e) {
@@ -31,5 +36,4 @@ public class UdpUnicastClient implements Runnable {
             System.out.println("Timeout. Client is closing.");
         }
     }
-
 }
