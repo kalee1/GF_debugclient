@@ -28,7 +28,6 @@ public class UdpUnicastClient implements Runnable {
 
                 String receivedMessage = new String(datagramPacket.getData());
                 myMessageProcessor.processMessage(receivedMessage);
-                System.out.println(receivedMessage);
             }
         } catch (SocketException e) {
             e.printStackTrace();

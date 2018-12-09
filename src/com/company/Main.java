@@ -15,11 +15,15 @@ import javafx.stage.Stage;
 import java.awt.geom.Point2D;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 
 public class Main extends Application {
     public static double WIDTH = 1000;
     public static double HEIGHT = 1000;
     public static final double ACTUAL_FIELD_SIZE = 358.8;
+
+
+
     //launches
     public static void main(String[] args){
         launch(args);
@@ -67,7 +71,19 @@ public class Main extends Application {
         gc.clearRect(0,0,2000,2000);//clear
         drawField(gc);
         drawRobot(gc);
+        drawDebugPoints(gc);
+    }
 
+
+
+    public static ArrayList<floatPoint> displayPoints = new ArrayList<>();//all the points to display
+    private void drawDebugPoints(GraphicsContext gc) {
+        for(int i =0; i < displayPoints.size(); i ++){
+            floatPoint displayLocation = convertToScreen(
+                    new floatPoint(displayPoints.get(i).x, displayPoints.get(i).y));
+            double radius = 10;
+            gc.strokeOval(displayLocation.x-radius,displayLocation.y-radius,2*radius,2*radius);
+        }
     }
 
     private void drawField(GraphicsContext gc) {
