@@ -9,19 +9,18 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
 import javafx.stage.Stage;
 
-import java.awt.geom.Point2D;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.concurrent.Semaphore;
 
 public class Main extends Application {
     public static double WIDTH = 1000;
     public static double HEIGHT = 1000;
     public static final double ACTUAL_FIELD_SIZE = 358.8;
-
+    public static Semaphore drawSemaphore = new Semaphore(1);
 
 
     //launches
@@ -48,20 +47,33 @@ public class Main extends Application {
 
 
 
-
+//        TcpipListener tcpipListener = new TcpipListener(11115);
+//        Thread runner = new Thread(tcpipListener);
+//        runner.start();
         UdpUnicastClient udpUnicastClient = new UdpUnicastClient(11115);
         Thread runner = new Thread(udpUnicastClient);
         runner.start();
 
 
 
+
+
+
         new AnimationTimer() {
             @Override public void handle(long currentNanoTime) {
-                WIDTH = primaryStage.getWidth() * 1;
-                HEIGHT = primaryStage.getHeight() * 1.0 - 30;
+                try {
+                    drawSemaphore.acquire();
+                    WIDTH = primaryStage.getWidth() * 1;
+                    HEIGHT = primaryStage.getHeight() * 1.0 - 30;
 
-                gc.setLineWidth(10);
-                drawScreen(gc);
+                    gc.setLineWidth(10);
+                    drawScreen(gc);
+
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                drawSemaphore.release();
+
             }
         }.start();
 
@@ -71,28 +83,43 @@ public class Main extends Application {
         gc.clearRect(0,0,2000,2000);//clear
         drawField(gc);
         drawRobot(gc);
+        drawDebugLines(gc);
         drawDebugPoints(gc);
+
     }
 
 
 
     public static ArrayList<floatPoint> displayPoints = new ArrayList<>();//all the points to display
+    public static ArrayList<Line> displayLines = new ArrayList<>();//all the lines to display
+
     private void drawDebugPoints(GraphicsContext gc) {
         for(int i =0; i < displayPoints.size(); i ++){
             floatPoint displayLocation = convertToScreen(
                     new floatPoint(displayPoints.get(i).x, displayPoints.get(i).y));
-            double radius = 10;
+            double radius = 5;
             gc.strokeOval(displayLocation.x-radius,displayLocation.y-radius,2*radius,2*radius);
+        }
+    }
+    private void drawDebugLines(GraphicsContext gc) {
+        for(int i =0; i < displayLines.size(); i ++){
+            floatPoint displayLocation1 = convertToScreen(
+                    new floatPoint(displayLines.get(i).x1, displayLines.get(i).y1));
+            floatPoint displayLocation2 = convertToScreen(
+                    new floatPoint(displayLines.get(i).x2, displayLines.get(i).y2));
+
+
+            gc.setLineWidth(3);
+            gc.strokeLine(displayLocation1.x,displayLocation1.y,displayLocation2.x,displayLocation2.y);
+
         }
     }
 
     private void drawField(GraphicsContext gc) {
-
         drawLineField(gc,0,0,ACTUAL_FIELD_SIZE,0,Color.BLACK);
         drawLineField(gc,ACTUAL_FIELD_SIZE,0,ACTUAL_FIELD_SIZE,ACTUAL_FIELD_SIZE,Color.BLACK);
         drawLineField(gc,ACTUAL_FIELD_SIZE,ACTUAL_FIELD_SIZE,0,ACTUAL_FIELD_SIZE,Color.BLACK);
         drawLineField(gc,0,ACTUAL_FIELD_SIZE,0,0,Color.BLACK);
-
 
         try {
             Image image = new Image(new FileInputStream(System.getProperty("user.dir") + "/field.png"));
@@ -100,7 +127,6 @@ public class Main extends Application {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-
     }
 
     private void drawRobot(GraphicsContext gc) {
@@ -109,9 +135,6 @@ public class Main extends Application {
         double robotX = MessageProcessing.getRobotX();
         double robotY = MessageProcessing.getRobotY();
         double robotAngle = MessageProcessing.getRobotAngle();
-
-
-
 
         double topLeftX = robotX + (robotRadius * (Math.cos(robotAngle+Math.toRadians(45))));
         double topLeftY = robotY + (robotRadius * (Math.sin(robotAngle+Math.toRadians(45))));

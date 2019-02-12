@@ -8,50 +8,41 @@ public class MessageProcessing {
     }
 
     public void processMessage(String receivedMessage) {
-        String[] messageSplit = receivedMessage.split(";");
-        if(messageSplit.length == 0){
-            System.out.println("messageSplit length = 0");
-            return;
-        }
-        receivedMessage = messageSplit[0];
-
-        String[] crcSplit = receivedMessage.split("%");
-
-        if(crcSplit.length != 2){
-            System.out.println("Split length not 2!");
-            return;
-        }
-        try{
-            int length = Integer.parseInt(crcSplit[1]);
-            if(length != crcSplit[0].length()){
-                System.out.println("calc length diff from claimed!");
-            }
-        }catch (Exception e){
-            System.out.println("try catch exception!");
-            return;
-        }
-
-        receivedMessage = crcSplit[0];
-        System.out.println(receivedMessage);
+        System.out.println("RECEIVED: " + receivedMessage);
 
 
-        //the messages are sent using commas
-        String[] splitString = receivedMessage.split(",");
-        String id = splitString[0];
+        //first there might be multiple messages in one packet. These are separated by '%'
+        String[] splitMessages = receivedMessage.split("%");
 
-        if(id.equals("ROBOT")){
-            processRobotLocation(splitString);
-        }else{
-            if(id.equals("POINT")){//POINT codes for debug point, just display it on the screen as a dot
-                processPoint(splitString);
+
+        //go through all the messages now
+        for(String message : splitMessages){
+            //the individual messages are split using commas
+            String[] splitString = message.split(",");
+            String id = splitString[0];
+
+            if(id.equals("ROBOT")){
+                System.out.println("updating robot");
+                processRobotLocation(splitString);
             }else{
-                if(id.equals("CLEAR")){
-                    clear();
+                if(id.equals("POINT")){//POINT codes for debug point, just display it on the screen as a dot
+
+                    processPoint(splitString);
+                }else{
+                    if(id.equals("LINE")){
+                        System.out.println("updating line");
+
+                        processLine(splitString);
+                    }else{
+                        if(id.substring(0,5).equals("CLEAR")){
+                            System.out.println("clearing");
+                            clear();
+                        }
+                    }
                 }
             }
         }
     }
-
 
 
 
@@ -83,6 +74,7 @@ public class MessageProcessing {
 
     //this handles the list of debugPoints to be drawn on the screen
     ArrayList<floatPoint> debugPoints = new ArrayList<>();
+    ArrayList<Line> debugLines = new ArrayList<>();
 
     /**
      * Takes a String[] and parses it into a point, adding it to the list of display points.
@@ -94,13 +86,40 @@ public class MessageProcessing {
     }
 
 
-    /**
-     * Clears the debug points arraylist, occurrs when the CLEAR command is send by the phone
-     */
-    private void clear() {
-        Main.displayPoints = debugPoints;
-        debugPoints.clear();
-
+    private void processLine(String[] splitString) {
+        if(splitString.length != 5){return;}
+        debugLines.add(new Line(Double.parseDouble(splitString[1]),
+                Double.parseDouble(splitString[2]),
+                Double.parseDouble(splitString[3]),
+                Double.parseDouble(splitString[4])));
     }
 
+
+
+    /**
+     * Clears the debug points ArrayList, occurs when the CLEAR command is send by the phone
+     */
+    private void clear() {
+
+
+
+
+        try {
+            Main.drawSemaphore.acquire();
+            Main.displayPoints.clear();
+            Main.displayPoints.addAll(debugPoints);
+
+            System.out.println("UPDATING LINES");
+            Main.displayLines.clear();
+            Main.displayLines.addAll(debugLines);
+
+
+            debugPoints.clear();
+            debugLines.clear();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        Main.drawSemaphore.release();
+
+    }
 }
