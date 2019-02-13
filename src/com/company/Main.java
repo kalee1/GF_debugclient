@@ -23,8 +23,8 @@ public class Main extends Application {
     /**
      * Dimensions of the canvas/field:
      */
-    public static double WIDTH = 1100;
-    public static double HEIGHT = 1100;
+    public static double WIDTH = 1000;
+    public static double HEIGHT = 1000;
     public static final double ACTUAL_FIELD_SIZE = 358.8;
     public static Semaphore drawSemaphore = new Semaphore(1);
 
@@ -57,17 +57,22 @@ public class Main extends Application {
 
 
 
-        Image image = new Image(new FileInputStream(System.getProperty("user.dir") + "/field dark.png"));
-        fieldBackgroundImageView = new ImageView();
-        fieldBackgroundImageView.setImage(image);//set the image
-        fieldBackgroundImageView.setFitWidth(HEIGHT);
-        fieldBackgroundImageView.setFitHeight(HEIGHT);
 
-        root.getChildren().add(fieldBackgroundImageView);
+
 
         //add the canvas
         root.getChildren().add(canvas);
         primaryStage.setScene(new Scene(root));
+        primaryStage.setMaximized(true);//we can maximize by default
+
+
+        /**
+         * Setup the background image
+         */
+        Image image = new Image(new FileInputStream(System.getProperty("user.dir") + "/field dark.png"));
+        fieldBackgroundImageView = new ImageView();
+        fieldBackgroundImageView.setImage(image);//set the image
+        root.getChildren().add(fieldBackgroundImageView);
 
 
         //show the primaryStage
@@ -91,12 +96,12 @@ public class Main extends Application {
                     //acquire the drawing semaphore
                     drawSemaphore.acquire();
                     //set the width and height
-                    WIDTH = primaryStage.getWidth() * 1;
-                    HEIGHT = primaryStage.getHeight() * 1.0 - 36;
+                    WIDTH = primaryStage.getWidth();
+                    HEIGHT = primaryStage.getHeight() - 22;//36
 
 
-                    fieldBackgroundImageView.setFitWidth(HEIGHT);
-                    fieldBackgroundImageView.setFitHeight(HEIGHT);
+                    fieldBackgroundImageView.setFitWidth(getFieldSizePixels());
+                    fieldBackgroundImageView.setFitHeight(getFieldSizePixels());
 
 
                     gc.setLineWidth(10);
@@ -151,13 +156,36 @@ public class Main extends Application {
 
 
             gc.setLineWidth(3);
+            gc.setStroke(new Color(0.0,1.0,1.0,0.6));
+
 
             gc.strokeLine(displayLocation1.x,displayLocation1.y,displayLocation2.x,displayLocation2.y);
         }
     }
 
 
+    /**
+     * These can be changed to pan and zoom
+     * THESE ARE REAL COORDINATES
+     */
+    private double globalOffsetX = 0;
+    private double globalOffsetY = 0;
+    private double zoomImage = 1.0;
 
+
+    /**
+     * This will move the background image and everything else to follow the robot
+     */
+    private void followRobot(double robotX, double robotY){
+
+
+        globalOffsetX = robotX;// - ((WIDTH/fieldSizePixels) * ACTUAL_FIELD_SIZE/2.0);
+        globalOffsetY = robotY;// + ((HEIGHT/fieldSizePixels) * ACTUAL_FIELD_SIZE/2.0);
+        floatPoint screenCoordinates =
+                convertToScreenScale(new floatPoint(globalOffsetX, globalOffsetY));
+        fieldBackgroundImageView.setX(screenCoordinates.x);
+        fieldBackgroundImageView.setY(screenCoordinates.y);
+    }
 
     private void drawRobot(GraphicsContext gc) {
         //robot radius is half the diagonal length
@@ -165,6 +193,10 @@ public class Main extends Application {
         double robotX = MessageProcessing.getRobotX();
         double robotY = MessageProcessing.getRobotY();
         double robotAngle = MessageProcessing.getRobotAngle();
+
+        followRobot(robotX,robotY);
+
+
 
         double topLeftX = robotX + (robotRadius * (Math.cos(robotAngle+Math.toRadians(45))));
         double topLeftY = robotY + (robotRadius * (Math.sin(robotAngle+Math.toRadians(45))));
@@ -184,11 +216,11 @@ public class Main extends Application {
 //
 
         try {
-            floatPoint bottomLeft = convertToScreen(new floatPoint(bottomLeftX,bottomLeftY));
+            floatPoint bottomLeft = convertToScreen(new floatPoint(topLeftX,topLeftY));
             double width = fieldSizePixels * (18*2.54/360.0);//calculate the width of the image in pixels
 
             gc.save();//save the gc
-            gc.transform(new Affine(new Rotate(Math.toDegrees(-robotAngle), bottomLeft.x, bottomLeft.y)));
+            gc.transform(new Affine(new Rotate(Math.toDegrees(-robotAngle) + 90, bottomLeft.x, bottomLeft.y)));
             Image image = new Image(new FileInputStream(System.getProperty("user.dir") + "/robot.png"));
             gc.drawImage(image,bottomLeft.x, bottomLeft.y,width,width);
 
@@ -202,19 +234,45 @@ public class Main extends Application {
 
 
 
-    double fieldSizePixels = 0;
+    private double fieldSizePixels = 0;//size of the field in pixels but use getter
     /**
-     * Converts a field point to screen coordinates
+     * Converts a field point to screen scale. This doesn't take into account the translation
+     * @param fieldPoint
+     * @return
+     */
+    public floatPoint convertToScreenScale(floatPoint fieldPoint){
+        fieldSizePixels = getFieldSizePixels();
+        return new floatPoint(((fieldPoint.x/ACTUAL_FIELD_SIZE)*fieldSizePixels),
+                ((1.0-(fieldPoint.y/ACTUAL_FIELD_SIZE))*fieldSizePixels));
+    }
+
+
+
+
+
+
+    /**
+     * This converts a fieldPoint to actual field coordinates
      * @param fieldPoint
      * @return
      */
     public floatPoint convertToScreen(floatPoint fieldPoint){
-        fieldSizePixels = HEIGHT < WIDTH ? HEIGHT : WIDTH;
-        return new floatPoint((fieldPoint.x/ACTUAL_FIELD_SIZE)*fieldSizePixels,
-                (1.0-(fieldPoint.y/ACTUAL_FIELD_SIZE))*fieldSizePixels);
+        //translate the dude
+        floatPoint withTranslation = new floatPoint(fieldPoint.x + globalOffsetX,
+                fieldPoint.y + globalOffsetY);
+
+        return convertToScreenScale(withTranslation);
     }
 
 
+    /**
+     * This will give the size of the field in pixels
+     * @return
+     */
+    public double getFieldSizePixels(){
+        fieldSizePixels = HEIGHT > WIDTH ? HEIGHT : WIDTH;
+        return fieldSizePixels;
+    }
 
     public void drawLineField(GraphicsContext gc,double x1, double y1, double x2, double y2,Color color){
         floatPoint first = convertToScreen(new floatPoint(x1,y1));
