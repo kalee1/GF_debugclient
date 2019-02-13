@@ -20,7 +20,6 @@ public class UdpUnicastClient implements Runnable {
     public void run() {
         System.out.println("running");
         try(DatagramSocket clientSocket = new DatagramSocket(port)){
-            clientSocket.setSoTimeout(6000);//if don't receive anything from server for 3000 millis, it will give exception
             while (true){
                 byte[] buffer = new byte[65507];
                 DatagramPacket datagramPacket = new DatagramPacket(buffer,0,buffer.length);

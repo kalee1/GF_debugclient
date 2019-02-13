@@ -8,7 +8,10 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.paint.Color;
+import javafx.scene.transform.Affine;
+import javafx.scene.transform.Rotate;
 import javafx.stage.Stage;
 
 import java.io.FileInputStream;
@@ -17,17 +20,30 @@ import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
 
 public class Main extends Application {
-    public static double WIDTH = 1000;
-    public static double HEIGHT = 1000;
+    /**
+     * Dimensions of the canvas/field:
+     */
+    public static double WIDTH = 1200;
+    public static double HEIGHT = 1200;
     public static final double ACTUAL_FIELD_SIZE = 358.8;
     public static Semaphore drawSemaphore = new Semaphore(1);
 
 
-    //launches
+
+
+    //this is the ImageView that will hold the field background
+    private ImageView fieldBackgroundImageView;
+
+    /**
+     * Launches
+     */
     public static void main(String[] args){
         launch(args);
     }
 
+    /**
+     * Runs at the initialization of the window (after main)
+     */
     @Override
     public void start(Stage primaryStage) throws Exception {
         //WINDOW STUFF//
@@ -39,6 +55,16 @@ public class Main extends Application {
         //the GraphicsContext is what we use to draw on the canvas
         GraphicsContext gc = canvas.getGraphicsContext2D();
 
+
+
+        Image image = new Image(new FileInputStream(System.getProperty("user.dir") + "/field dark.png"));
+        fieldBackgroundImageView = new ImageView();
+        fieldBackgroundImageView.setImage(image);//set the image
+        fieldBackgroundImageView.setFitWidth(WIDTH);
+        fieldBackgroundImageView.setFitHeight(HEIGHT);
+
+        root.getChildren().add(fieldBackgroundImageView);
+
         //add the canvas
         root.getChildren().add(canvas);
         primaryStage.setScene(new Scene(root));
@@ -47,9 +73,6 @@ public class Main extends Application {
 
 
 
-//        TcpipListener tcpipListener = new TcpipListener(11115);
-//        Thread runner = new Thread(tcpipListener);
-//        runner.start();
         UdpUnicastClient udpUnicastClient = new UdpUnicastClient(11115);
         Thread runner = new Thread(udpUnicastClient);
         runner.start();
@@ -59,12 +82,20 @@ public class Main extends Application {
 
 
 
+        //CREATE A NEW ANIMATION TIMER THAT WILL CALL THE DRAWING OF THE SCREEN
         new AnimationTimer() {
             @Override public void handle(long currentNanoTime) {
                 try {
+                    //acquire the drawing semaphore
                     drawSemaphore.acquire();
+                    //set the width and height
                     WIDTH = primaryStage.getWidth() * 1;
                     HEIGHT = primaryStage.getHeight() * 1.0 - 30;
+
+
+                    fieldBackgroundImageView.setFitWidth(WIDTH);
+                    fieldBackgroundImageView.setFitHeight(HEIGHT);
+
 
                     gc.setLineWidth(10);
                     drawScreen(gc);
@@ -76,13 +107,19 @@ public class Main extends Application {
 
             }
         }.start();
-
     }
 
+
+    /**
+     * This will draw the screen using the graphics context
+     * @param gc the graphics context
+     */
     private void drawScreen(GraphicsContext gc) {
-        gc.clearRect(0,0,2000,2000);//clear
-        drawField(gc);
+        //clear everything first
+        gc.clearRect(0,0,WIDTH,WIDTH);
+        //then draw the robot
         drawRobot(gc);
+        //draw all the lines and points retrieved from the phone
         drawDebugLines(gc);
         drawDebugPoints(gc);
 
@@ -98,6 +135,8 @@ public class Main extends Application {
             floatPoint displayLocation = convertToScreen(
                     new floatPoint(displayPoints.get(i).x, displayPoints.get(i).y));
             double radius = 5;
+            gc.setStroke(new Color(0.0,1.0,1.0,0.6));
+
             gc.strokeOval(displayLocation.x-radius,displayLocation.y-radius,2*radius,2*radius);
         }
     }
@@ -110,24 +149,13 @@ public class Main extends Application {
 
 
             gc.setLineWidth(3);
+
             gc.strokeLine(displayLocation1.x,displayLocation1.y,displayLocation2.x,displayLocation2.y);
-
         }
     }
 
-    private void drawField(GraphicsContext gc) {
-        drawLineField(gc,0,0,ACTUAL_FIELD_SIZE,0,Color.BLACK);
-        drawLineField(gc,ACTUAL_FIELD_SIZE,0,ACTUAL_FIELD_SIZE,ACTUAL_FIELD_SIZE,Color.BLACK);
-        drawLineField(gc,ACTUAL_FIELD_SIZE,ACTUAL_FIELD_SIZE,0,ACTUAL_FIELD_SIZE,Color.BLACK);
-        drawLineField(gc,0,ACTUAL_FIELD_SIZE,0,0,Color.BLACK);
 
-        try {
-            Image image = new Image(new FileInputStream(System.getProperty("user.dir") + "/field.png"));
-            gc.drawImage(image,0,0,fieldSizePixels,fieldSizePixels);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-    }
+
 
     private void drawRobot(GraphicsContext gc) {
         //robot radius is half the diagonal length
@@ -145,12 +173,29 @@ public class Main extends Application {
         double bottomRightX = robotX + (robotRadius * (Math.cos(robotAngle-Math.toRadians(135))));
         double bottomRightY = robotY + (robotRadius * (Math.sin(robotAngle-Math.toRadians(135))));
 
-        Color c = Color.color(1.0,0.9,0);
+        Color c = Color.color(1.0,1.0,0.0);
         //draw the points
-        drawLineField(gc,topLeftX, topLeftY, topRightX, topRightY,c);
-        drawLineField(gc,topRightX, topRightY, bottomRightX, bottomRightY,c);
-        drawLineField(gc,bottomRightX, bottomRightY, bottomLeftX, bottomLeftY,c);
-        drawLineField(gc,bottomLeftX, bottomLeftY, topLeftX, topLeftY,c);
+//        drawLineField(gc,topLeftX, topLeftY, topRightX, topRightY,c);
+//        drawLineField(gc,topRightX, topRightY, bottomRightX, bottomRightY,c);
+//        drawLineField(gc,bottomRightX, bottomRightY, bottomLeftX, bottomLeftY,c);
+//        drawLineField(gc,bottomLeftX, bottomLeftY, topLeftX, topLeftY,c);
+//
+
+        try {
+            floatPoint bottomLeft = convertToScreen(new floatPoint(bottomLeftX,bottomLeftY));
+            double width = fieldSizePixels * (18*2.54/360.0);//calculate the width of the image in pixels
+
+            gc.save();//save the gc
+            gc.transform(new Affine(new Rotate(Math.toDegrees(-robotAngle), bottomLeft.x, bottomLeft.y)));
+            Image image = new Image(new FileInputStream(System.getProperty("user.dir") + "/robot.png"));
+            gc.drawImage(image,bottomLeft.x, bottomLeft.y,width,width);
+
+
+            gc.restore();
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
 
