@@ -46,16 +46,12 @@ public class MessageProcessing {
 
 
 
-    private static double robotX = 180;
-    private static double robotY = 180;
+    private static double robotX = 0;
+    private static double robotY = 0;
     private static double robotAngle = 0;
 
-    public static double getRobotX() {
-        return robotX;
-    }
-    public static double getRobotY() {
-        return robotY;
-    }
+    public static double getRobotX() { return robotX; }
+    public static double getRobotY() { return robotY; }
     public static double getRobotAngle() {
         return robotAngle;
     }
