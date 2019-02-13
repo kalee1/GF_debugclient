@@ -23,8 +23,8 @@ public class Main extends Application {
     /**
      * Dimensions of the canvas/field:
      */
-    public static double WIDTH = 1200;
-    public static double HEIGHT = 1200;
+    public static double WIDTH = 1100;
+    public static double HEIGHT = 1100;
     public static final double ACTUAL_FIELD_SIZE = 358.8;
     public static Semaphore drawSemaphore = new Semaphore(1);
 
@@ -60,7 +60,7 @@ public class Main extends Application {
         Image image = new Image(new FileInputStream(System.getProperty("user.dir") + "/field dark.png"));
         fieldBackgroundImageView = new ImageView();
         fieldBackgroundImageView.setImage(image);//set the image
-        fieldBackgroundImageView.setFitWidth(WIDTH);
+        fieldBackgroundImageView.setFitWidth(HEIGHT);
         fieldBackgroundImageView.setFitHeight(HEIGHT);
 
         root.getChildren().add(fieldBackgroundImageView);
@@ -68,6 +68,8 @@ public class Main extends Application {
         //add the canvas
         root.getChildren().add(canvas);
         primaryStage.setScene(new Scene(root));
+
+
         //show the primaryStage
         primaryStage.show();
 
@@ -90,10 +92,10 @@ public class Main extends Application {
                     drawSemaphore.acquire();
                     //set the width and height
                     WIDTH = primaryStage.getWidth() * 1;
-                    HEIGHT = primaryStage.getHeight() * 1.0 - 30;
+                    HEIGHT = primaryStage.getHeight() * 1.0 - 36;
 
 
-                    fieldBackgroundImageView.setFitWidth(WIDTH);
+                    fieldBackgroundImageView.setFitWidth(HEIGHT);
                     fieldBackgroundImageView.setFitHeight(HEIGHT);
 
 
@@ -116,7 +118,7 @@ public class Main extends Application {
      */
     private void drawScreen(GraphicsContext gc) {
         //clear everything first
-        gc.clearRect(0,0,WIDTH,WIDTH);
+        gc.clearRect(0,0,WIDTH,HEIGHT);
         //then draw the robot
         drawRobot(gc);
         //draw all the lines and points retrieved from the phone
