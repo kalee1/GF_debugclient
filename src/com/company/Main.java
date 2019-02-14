@@ -175,8 +175,8 @@ public class Main extends Application {
      */
     private void followRobot(double robotX, double robotY){
         //set the center point to the robot
-        Screen.setCenterPoint(robotX, robotY);
-
+//        Screen.setCenterPoint(robotX, robotY);
+        Screen.setCenterPoint(Screen.ACTUAL_FIELD_SIZE/2.0,Screen.ACTUAL_FIELD_SIZE * 0.26);
 
         //get where the origin of the field is in pixels
         floatPoint originInPixels = convertToScreen(new floatPoint(0,Screen.ACTUAL_FIELD_SIZE));
