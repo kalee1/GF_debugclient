@@ -72,19 +72,22 @@ public class Main extends Application {
         primaryStage.setTitle("Gluten Free Debug Receiver v0.1");
         ////////////////
 
+
+        rootGroup = new Group();
+
         primaryStage.setMaxWidth(1000);
         primaryStage.setMaxHeight(1000);
-        rootGroup = new Group();
 
 
         //Now we can setup the HBox
         mainHBox = new HBox();
         mainHBox.prefWidthProperty().bind(primaryStage.widthProperty());
-        mainHBox.widthProperty().addListener((observable, oldValue, newValue) -> {
+//        mainHBox.widthProperty().addListener((observable, oldValue, newValue) -> {
+//
+//            fieldBackgroundImageView.setFitWidth(newValue.doubleValue() / 2);
+//            fieldBackgroundImageView.setFitHeight(newValue.doubleValue() / 2);
+//        });
 
-            fieldBackgroundImageView.setFitWidth(newValue.doubleValue() / 2);
-            fieldBackgroundImageView.setFitHeight(newValue.doubleValue() / 2);
-        });
 
         fieldGroup = new Group();//this will hold the fieldBackgroundImageView and the fieldCanvas
         ///////////////////////////////////Setup the background image/////////////////////////////////
@@ -162,8 +165,8 @@ public class Main extends Application {
 //                    fieldCanvas.setWidth(Screen.getFieldSizePixels());
 //                    fieldCanvas.setHeight(Screen.getFieldSizePixels());
 
-//                    fieldBackgroundImageView.setFitWidth(Screen.getFieldSizePixels());
-//                    fieldBackgroundImageView.setFitHeight(Screen.getFieldSizePixels());
+                    fieldBackgroundImageView.setFitWidth(mainHBox.getWidth()/2);
+                    fieldBackgroundImageView.setFitHeight(mainHBox.getWidth()/2);
 
 
                     System.out.println(primaryStage.getWidth());
