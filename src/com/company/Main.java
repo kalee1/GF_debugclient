@@ -3,16 +3,16 @@ package com.company;
 
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
+import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.transform.Affine;
 import javafx.scene.transform.Rotate;
@@ -31,17 +31,13 @@ public class Main extends Application {
 
     //this is the ImageView that will hold the field background
     private ImageView fieldBackgroundImageView;
-//    private Canvas fieldCanvas;
+    private Canvas fieldCanvas;
 
+    private Group rootGroup;//holds the grid and the field stuff
 
-
-
-    private Group rootGroup;//holds the grid
-    //this will hold the field map and debugging information in a horizontal layout
+    //this will overlay stuff for other debugging purposes. This is inside the rootGroup
     private HBox mainHBox;
 
-    //this is the first element in the mainHBox and will hold the background image and canvas
-    private Group fieldGroup;
 
 
 
@@ -69,55 +65,67 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         //WINDOW STUFF//
-        primaryStage.setTitle("Gluten Free Debug Receiver v0.1");
+        primaryStage.setTitle("Gluten Free Debug Receiver v1.1");
         ////////////////
 
 
-        rootGroup = new Group();
 
-        primaryStage.setMaxWidth(1000);
-        primaryStage.setMaxHeight(1000);
+        //this is the group that holds everything
+        rootGroup = new Group();
+        //create a new scene, pass the rootGroup
+        Scene scene = new Scene(rootGroup);
+
+
+
 
 
         //Now we can setup the HBox
         mainHBox = new HBox();
+        //bind the main h box width to the primary stage width so that changes with it
         mainHBox.prefWidthProperty().bind(primaryStage.widthProperty());
-//        mainHBox.widthProperty().addListener((observable, oldValue, newValue) -> {
-//
-//            fieldBackgroundImageView.setFitWidth(newValue.doubleValue() / 2);
-//            fieldBackgroundImageView.setFitHeight(newValue.doubleValue() / 2);
-//        });
+        mainHBox.prefHeightProperty().bind(primaryStage.heightProperty());
 
 
-        fieldGroup = new Group();//this will hold the fieldBackgroundImageView and the fieldCanvas
+
+
         ///////////////////////////////////Setup the background image/////////////////////////////////
         Image image = new Image(new FileInputStream(System.getProperty("user.dir") + "/field dark.png"));
         fieldBackgroundImageView = new ImageView();
 
-
         fieldBackgroundImageView.setImage(image);//set the image
 
-        fieldGroup.getChildren().add(fieldBackgroundImageView);//add the background image
+        //add the background image
+        rootGroup.getChildren().add(fieldBackgroundImageView);
         //////////////////////////////////////////////////////////////////////////////////////////////
 
 
 
 
         //Setup the canvas//
-//        fieldCanvas = new Canvas(Screen.widthScreen,Screen.heightScreen);
+        fieldCanvas = new Canvas(primaryStage.getWidth(),primaryStage.getHeight());
         //the GraphicsContext is what we use to draw on the fieldCanvas
-//        GraphicsContext gc = fieldCanvas.getGraphicsContext2D();
-//        fieldGroup.getChildren().add(fieldCanvas);//add the canvas
-
+        GraphicsContext gc = fieldCanvas.getGraphicsContext2D();
+        rootGroup.getChildren().add(fieldCanvas);//add the canvas
         ////////////////////
 
 
-        //add the fieldBackgroundImageView as the first object in the GridPane (0,0)
-        mainHBox.getChildren().add(fieldGroup);
 
-        Button testButton = new Button("memes");
-        testButton.setPrefWidth(500);
-        mainHBox.getChildren().add(testButton);
+
+        /**
+         * We will use a vbox and set it's width to create a spacer in the window
+         * USE THIS TO CHANGE THE SPACING
+         */
+        VBox debuggingHSpacer = new VBox();
+        mainHBox.getChildren().add(debuggingHSpacer);
+
+
+        Label debuggingLabel = new Label("this is a test of the debugging information. THis is a long line to see if it works." +
+                "\n now this is a new line" +
+                "\n memes");
+        debuggingLabel.textFillProperty().setValue(new Color(0,1.0,1.0,1));
+        debuggingLabel.setWrapText(true);
+        mainHBox.getChildren().add(debuggingLabel);
+        debuggingLabel.setAlignment(Pos.BOTTOM_CENTER);
 
 
 
@@ -132,11 +140,11 @@ public class Main extends Application {
 
         //now we can add the mainHBox to the root group
         rootGroup.getChildren().add(mainHBox);
-        Scene scene = new Scene(rootGroup);//create a new scene, pass the rootGroup
         scene.setFill(Color.BLACK);//we'll be black
         primaryStage.setScene(scene);//set the primary stage's scene
-        primaryStage.setMaximized(true);//we can maximize by default
-
+        primaryStage.setWidth(800);
+        primaryStage.setHeight(800);
+        primaryStage.setMaximized(true);
 
         //show the primaryStage
         primaryStage.show();
@@ -160,18 +168,22 @@ public class Main extends Application {
                     drawSemaphore.acquire();
 
                     //set the width and height
-                    Screen.setDimensionsPixels(primaryStage.getWidth()*0.3,
-                            primaryStage.getHeight()*0.9);
-//                    fieldCanvas.setWidth(Screen.getFieldSizePixels());
-//                    fieldCanvas.setHeight(Screen.getFieldSizePixels());
+                    Screen.setDimensionsPixels(scene.getWidth(),
+                            scene.getHeight());
+                    fieldCanvas.setWidth(Screen.getFieldSizePixels());
+                    fieldCanvas.setHeight(Screen.getFieldSizePixels());
 
-                    fieldBackgroundImageView.setFitWidth(mainHBox.getWidth()/2);
-                    fieldBackgroundImageView.setFitHeight(mainHBox.getWidth()/2);
+                    fieldBackgroundImageView.setFitWidth(Screen.getFieldSizePixels());
+                    fieldBackgroundImageView.setFitHeight(Screen.getFieldSizePixels());
+
+                    debuggingHSpacer.setPrefWidth(scene.getWidth() * 0.8);
+
+                    debuggingLabel.setMaxWidth(scene.getWidth() * 0.2);
 
 
                     System.out.println(primaryStage.getWidth());
 //                    gc.setLineWidth(10);
-//                    drawScreen(gc);
+                    drawScreen(gc);
 
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -189,9 +201,8 @@ public class Main extends Application {
      */
     private void drawScreen(GraphicsContext gc) {
         //clear everything first
-//        gc.clearRect(0,0,Screen.widthScreen,Screen.heightScreen);
-        gc.setFill(Color.RED);
-        gc.fillRect(0,0,Screen.widthScreen,Screen.heightScreen);
+        gc.clearRect(0,0,Screen.widthScreen,Screen.heightScreen);
+//        gc.fillRect(0,0,Screen.widthScreen,Screen.heightScreen);
         //then draw the robot
         drawRobot(gc);
         //draw all the lines and points retrieved from the phone
@@ -239,7 +250,8 @@ public class Main extends Application {
     private void followRobot(double robotX, double robotY){
         //set the center point to the robot
 //        Screen.setCenterPoint(robotX, robotY);
-        Screen.setCenterPoint(Screen.ACTUAL_FIELD_SIZE/2.0,Screen.ACTUAL_FIELD_SIZE * 0.26);
+        Screen.setCenterPoint(Screen.getCentimetersPerPixel()*Screen.widthScreen/2.0,
+                Screen.getCentimetersPerPixel()*Screen.heightScreen/2.0);
 
         //get where the origin of the field is in pixels
         floatPoint originInPixels = convertToScreen(new floatPoint(0,Screen.ACTUAL_FIELD_SIZE));
