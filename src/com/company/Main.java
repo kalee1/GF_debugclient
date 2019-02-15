@@ -7,8 +7,12 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.paint.Color;
 import javafx.scene.transform.Affine;
 import javafx.scene.transform.Rotate;
@@ -23,12 +27,34 @@ import static com.company.Screen.convertToScreen;
 
 public class Main extends Application {
 
-    public static Semaphore drawSemaphore = new Semaphore(1);
 
 
     //this is the ImageView that will hold the field background
     private ImageView fieldBackgroundImageView;
-    private Canvas canvas;
+//    private Canvas fieldCanvas;
+
+
+
+
+    private Group rootGroup;//holds the grid
+    //this will hold the field map and debugging information in a horizontal layout
+    private HBox mainHBox;
+
+    //this is the first element in the mainHBox and will hold the background image and canvas
+    private Group fieldGroup;
+
+
+
+    //////////////////////ALL LAYOUT PARAMETERS////////////////////////
+    private final int MAIN_GRID_HORIZONTAL_GAP = 100;//horizontal spacing of the main grid
+    private final int MAIN_GRID_VERTICAL_GAP = 100;//vertical spacing of the main grid
+    ///////////////////////////////////////////////////////////////////
+
+
+
+
+    public static Semaphore drawSemaphore = new Semaphore(1);
+
 
     /**
      * Launches
@@ -44,37 +70,69 @@ public class Main extends Application {
     public void start(Stage primaryStage) throws Exception {
         //WINDOW STUFF//
         primaryStage.setTitle("Gluten Free Debug Receiver v0.1");
-        Group root = new Group();
-        canvas = new Canvas(Screen.widthScreen,Screen.heightScreen);
         ////////////////
 
-        //the GraphicsContext is what we use to draw on the canvas
-        GraphicsContext gc = canvas.getGraphicsContext2D();
+        primaryStage.setMaxWidth(1000);
+        primaryStage.setMaxHeight(1000);
+        rootGroup = new Group();
 
 
-        /**
-         * Setup the background image
-         */
+        //Now we can setup the HBox
+        mainHBox = new HBox();
+        mainHBox.prefWidthProperty().bind(primaryStage.widthProperty());
+        mainHBox.widthProperty().addListener((observable, oldValue, newValue) -> {
+
+            fieldBackgroundImageView.setFitWidth(newValue.doubleValue() / 2);
+            fieldBackgroundImageView.setFitHeight(newValue.doubleValue() / 2);
+        });
+
+        fieldGroup = new Group();//this will hold the fieldBackgroundImageView and the fieldCanvas
+        ///////////////////////////////////Setup the background image/////////////////////////////////
         Image image = new Image(new FileInputStream(System.getProperty("user.dir") + "/field dark.png"));
         fieldBackgroundImageView = new ImageView();
+
+
         fieldBackgroundImageView.setImage(image);//set the image
-        root.getChildren().add(fieldBackgroundImageView);
+
+        fieldGroup.getChildren().add(fieldBackgroundImageView);//add the background image
+        //////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+        //Setup the canvas//
+//        fieldCanvas = new Canvas(Screen.widthScreen,Screen.heightScreen);
+        //the GraphicsContext is what we use to draw on the fieldCanvas
+//        GraphicsContext gc = fieldCanvas.getGraphicsContext2D();
+//        fieldGroup.getChildren().add(fieldCanvas);//add the canvas
+
+        ////////////////////
+
+
+        //add the fieldBackgroundImageView as the first object in the GridPane (0,0)
+        mainHBox.getChildren().add(fieldGroup);
+
+        Button testButton = new Button("memes");
+        testButton.setPrefWidth(500);
+        mainHBox.getChildren().add(testButton);
 
 
 
 
 
-        //add the canvas
-        root.getChildren().add(canvas);
-        Scene scene = new Scene(root);
-        scene.setFill(Color.BLACK);
-        primaryStage.setScene(scene);
-//        primaryStage.setWidth(Screen.widthScreen);
-//        primaryStage.setHeight(Screen.heightScreen);
+
+
+
+
+
+
+
+        //now we can add the mainHBox to the root group
+        rootGroup.getChildren().add(mainHBox);
+        Scene scene = new Scene(rootGroup);//create a new scene, pass the rootGroup
+        scene.setFill(Color.BLACK);//we'll be black
+        primaryStage.setScene(scene);//set the primary stage's scene
         primaryStage.setMaximized(true);//we can maximize by default
-
-
-
 
 
         //show the primaryStage
@@ -99,16 +157,18 @@ public class Main extends Application {
                     drawSemaphore.acquire();
 
                     //set the width and height
-                    Screen.setDimensionsPixels(primaryStage.getWidth(),primaryStage.getHeight() - 22);
-                    canvas.setWidth(Screen.widthScreen);
-                    canvas.setHeight(Screen.heightScreen);
+                    Screen.setDimensionsPixels(primaryStage.getWidth()*0.3,
+                            primaryStage.getHeight()*0.9);
+//                    fieldCanvas.setWidth(Screen.getFieldSizePixels());
+//                    fieldCanvas.setHeight(Screen.getFieldSizePixels());
 
-                    fieldBackgroundImageView.setFitWidth(Screen.getFieldSizePixels());
-                    fieldBackgroundImageView.setFitHeight(Screen.getFieldSizePixels());
+//                    fieldBackgroundImageView.setFitWidth(Screen.getFieldSizePixels());
+//                    fieldBackgroundImageView.setFitHeight(Screen.getFieldSizePixels());
 
 
-                    gc.setLineWidth(10);
-                    drawScreen(gc);
+                    System.out.println(primaryStage.getWidth());
+//                    gc.setLineWidth(10);
+//                    drawScreen(gc);
 
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -126,9 +186,9 @@ public class Main extends Application {
      */
     private void drawScreen(GraphicsContext gc) {
         //clear everything first
-        gc.clearRect(0,0,Screen.widthScreen,Screen.heightScreen);
-//        gc.setFill(Color.BLACK);
-//        gc.fillRect(0,0,Screen.widthScreen,Screen.heightScreen);
+//        gc.clearRect(0,0,Screen.widthScreen,Screen.heightScreen);
+        gc.setFill(Color.RED);
+        gc.fillRect(0,0,Screen.widthScreen,Screen.heightScreen);
         //then draw the robot
         drawRobot(gc);
         //draw all the lines and points retrieved from the phone
