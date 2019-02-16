@@ -14,12 +14,14 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 import javafx.scene.transform.Affine;
 import javafx.scene.transform.Rotate;
 import javafx.stage.Stage;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
 
@@ -119,19 +121,45 @@ public class Main extends Application {
         mainHBox.getChildren().add(debuggingHSpacer);
 
 
-        Label debuggingLabel = new Label("this is a test of the debugging information. THis is a long line to see if it works." +
-                "\n now this is a new line" +
-                "\n memes");
+
+
+
+
+
+
+
+        Group logGroup = new Group();
+
+        Image logImage = new Image(new FileInputStream(System.getProperty("user.dir") + "/log background.png"));
+        ImageView logImageView = new ImageView();
+        logImageView.setImage(logImage);//set the image
+
+        logImageView.setFitHeight(logImage.getHeight()/2.5);
+        logImageView.setFitWidth(logImage.getWidth()/2.5);
+
+        logGroup.setTranslateY(300);
+        //add the background image
+        logGroup.getChildren().add(logImageView);
+
+
+
+
+
+
+        Label debuggingLabel = new Label();
+        debuggingLabel.setFont(new Font("Courier New",20));
         debuggingLabel.textFillProperty().setValue(new Color(0,1.0,1.0,1));
+        debuggingLabel.setPrefWidth(logImageView.getFitWidth()-25);
+        debuggingLabel.setLayoutX(16);
+        debuggingLabel.setLayoutY(logImageView.getFitHeight()/4.7);
         debuggingLabel.setWrapText(true);
-        mainHBox.getChildren().add(debuggingLabel);
-        debuggingLabel.setAlignment(Pos.BOTTOM_CENTER);
+
+
+        logGroup.getChildren().add(debuggingLabel);
 
 
 
-
-
-
+        mainHBox.getChildren().add(logGroup);//add the log group
 
 
 
@@ -181,6 +209,9 @@ public class Main extends Application {
                     debuggingLabel.setMaxWidth(scene.getWidth() * 0.2);
 
 
+                    debuggingLabel.setText("Robot Coordinates: \n" +"X: " + MessageProcessing.getRobotX()
+                    + " , Y: " + MessageProcessing.getRobotY() + "\nAngle: "
+                            + String.format("%.2f",Math.toDegrees(MessageProcessing.getRobotAngle())) + "°");
                     System.out.println(primaryStage.getWidth());
 //                    gc.setLineWidth(10);
                     drawScreen(gc);
