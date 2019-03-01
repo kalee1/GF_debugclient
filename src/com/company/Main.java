@@ -137,7 +137,7 @@ public class Main extends Application {
         logImageView.setFitHeight(logImage.getHeight()/2.5);
         logImageView.setFitWidth(logImage.getWidth()/2.5);
 
-        logGroup.setTranslateY(300);
+        logGroup.setTranslateY(10);
         //add the background image
         logGroup.getChildren().add(logImageView);
 
@@ -204,7 +204,7 @@ public class Main extends Application {
                     fieldBackgroundImageView.setFitWidth(Screen.getFieldSizePixels());
                     fieldBackgroundImageView.setFitHeight(Screen.getFieldSizePixels());
 
-                    debuggingHSpacer.setPrefWidth(scene.getWidth() * 0.8);
+                    debuggingHSpacer.setPrefWidth(scene.getWidth() * 0.01);
 
                     debuggingLabel.setMaxWidth(scene.getWidth() * 0.2);
 
@@ -255,6 +255,7 @@ public class Main extends Application {
             gc.setStroke(new Color(0.0,1.0,1.0,0.6));
 
             gc.strokeOval(displayLocation.x-radius,displayLocation.y-radius,2*radius,2*radius);
+
         }
     }
     private void drawDebugLines(GraphicsContext gc) {

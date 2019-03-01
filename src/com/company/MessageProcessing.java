@@ -25,8 +25,7 @@ public class MessageProcessing {
                 System.out.println("updating robot");
                 processRobotLocation(splitString);
             }else{
-                if(id.equals("POINT")){//POINT codes for debug point, just display it on the screen as a dot
-
+                if(id.equals("P")){//POINT codes for debug point, just display it on the screen as a dot
                     processPoint(splitString);
                 }else{
                     if(id.equals("LINE")){
@@ -34,10 +33,13 @@ public class MessageProcessing {
 
                         processLine(splitString);
                     }else{
-                        if(id.substring(0,5).equals("CLEAR")){
-                            System.out.println("clearing");
-                            clear();
+                        if(id.length() >= 5){
+                            if(id.substring(0,5).equals("CLEAR")){
+                                System.out.println("clearing");
+                                clear();
+                            }
                         }
+
                     }
                 }
             }
@@ -96,17 +98,13 @@ public class MessageProcessing {
      * Clears the debug points ArrayList, occurs when the CLEAR command is send by the phone
      */
     private void clear() {
-
-
-
-
         try {
+
             Main.drawSemaphore.acquire();
             Main.displayPoints.clear();
-            Main.displayPoints.addAll(debugPoints);
-
-            System.out.println("UPDATING LINES");
             Main.displayLines.clear();
+
+            Main.displayPoints.addAll(debugPoints);
             Main.displayLines.addAll(debugLines);
 
 
