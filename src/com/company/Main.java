@@ -1,9 +1,9 @@
 package com.company;
 
 
+
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
-import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
@@ -21,7 +21,6 @@ import javafx.stage.Stage;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
 
@@ -257,6 +256,19 @@ public class Main extends Application {
             gc.strokeOval(displayLocation.x-radius,displayLocation.y-radius,2*radius,2*radius);
 
         }
+
+        for(int i =0; i < MessageProcessing.pointLog.size(); i ++){
+            floatPoint displayLocation = convertToScreen(
+                    new floatPoint(MessageProcessing.pointLog.get(i).x,
+                            MessageProcessing.pointLog.get(i).y));
+            double radius = 5;
+            gc.setStroke(new Color(1.0,0.0 + (double) i/MessageProcessing.pointLog.size(),0,0.9));
+
+            gc.strokeOval(displayLocation.x-radius,displayLocation.y-radius,2*radius,2*radius);
+
+        }
+
+
     }
     private void drawDebugLines(GraphicsContext gc) {
         for(int i =0; i < displayLines.size(); i ++){

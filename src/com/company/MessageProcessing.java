@@ -33,6 +33,10 @@ public class MessageProcessing {
 
                         processLine(splitString);
                     }else{
+                        if(id.equals("LP")){//log point
+                            //add point
+                            addPoint(splitString);
+                        }
                         if(id.length() >= 5){
                             if(id.substring(0,5).equals("CLEAR")){
                                 System.out.println("clearing");
@@ -70,8 +74,16 @@ public class MessageProcessing {
     }
 
 
+
+
+
+
     //this handles the list of debugPoints to be drawn on the screen
     ArrayList<floatPoint> debugPoints = new ArrayList<>();
+
+    //this is used to show paths
+    public static ArrayList<floatPoint> pointLog = new ArrayList<>();
+
     ArrayList<Line> debugLines = new ArrayList<>();
 
     /**
@@ -81,6 +93,31 @@ public class MessageProcessing {
     private void processPoint(String[] splitString) {
         if(splitString.length != 3){return;}
         debugPoints.add(new floatPoint(Double.parseDouble(splitString[1]),Double.parseDouble(splitString[2])));
+    }
+
+
+
+
+
+    /**
+     * Adds to the list of point log
+     * @param splitString String[] to be parsed into a point
+     */
+    private void addPoint(String[] splitString) {
+        if(splitString.length != 3){return;}
+        floatPoint toBeAddedMaybe = new floatPoint(Double.parseDouble(splitString[1]),
+                Double.parseDouble(splitString[2]));
+        //make sure the point doesn't already exist (close enough) in the list
+        boolean alreadyExists = false;
+        for(floatPoint p : pointLog){
+            if(Math.hypot(p.x-toBeAddedMaybe.x,p.y-toBeAddedMaybe.y) < 1.5){
+                alreadyExists = true;
+            }
+        }
+        //add it if it's unique
+        if(!alreadyExists){
+            pointLog.add(toBeAddedMaybe);
+        }
     }
 
 
