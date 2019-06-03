@@ -27,9 +27,6 @@ import java.util.concurrent.Semaphore;
 import static com.company.Screen.convertToScreen;
 
 public class Main extends Application {
-
-
-
     //this is the ImageView that will hold the field background
     private ImageView fieldBackgroundImageView;
     private Canvas fieldCanvas;
@@ -75,7 +72,6 @@ public class Main extends Application {
         rootGroup = new Group();
         //create a new scene, pass the rootGroup
         Scene scene = new Scene(rootGroup);
-
 
 
 
@@ -210,7 +206,7 @@ public class Main extends Application {
 
                     debuggingLabel.setText("Robot Coordinates: \n" +"X: " + MessageProcessing.getRobotX()
                     + " , Y: " + MessageProcessing.getRobotY() + "\nAngle: "
-                            + String.format("%.2f",Math.toDegrees(MessageProcessing.getRobotAngle())) + "°");
+                            + String.format("%.2f", Math.toDegrees(MessageProcessing.getRobotAngle())) + "°");
                     System.out.println(primaryStage.getWidth());
 //                    gc.setLineWidth(10);
                     drawScreen(gc);
@@ -254,7 +250,6 @@ public class Main extends Application {
             gc.setStroke(new Color(0.0,1.0,1.0,0.6));
 
             gc.strokeOval(displayLocation.x-radius,displayLocation.y-radius,2*radius,2*radius);
-
         }
 
         for(int i =0; i < MessageProcessing.pointLog.size(); i ++){
@@ -262,9 +257,9 @@ public class Main extends Application {
                     new floatPoint(MessageProcessing.pointLog.get(i).x,
                             MessageProcessing.pointLog.get(i).y));
             double radius = 5;
-            gc.setStroke(new Color(1.0,0.0 + (double) i/MessageProcessing.pointLog.size(),0,0.9));
+            gc.setFill(new Color(1.0,0.0 + (double) i/MessageProcessing.pointLog.size(),0,0.9));
 
-            gc.strokeOval(displayLocation.x-radius,displayLocation.y-radius,2*radius,2*radius);
+            gc.fillOval(displayLocation.x-radius,displayLocation.y-radius,2*radius,2*radius);
 
         }
 
@@ -303,25 +298,38 @@ public class Main extends Application {
         fieldBackgroundImageView.setY(originInPixels.y);
     }
 
+
+
+
+    //the last position of the robot
+    double lastRobotX = 0;
+    double lastRobotY = 0;
+    double lastRobotAngle = 0;
+
+    /**
+     * Draws the robot
+     * @param gc the graphics context
+     */
     private void drawRobot(GraphicsContext gc) {
         //robot radius is half the diagonal length
         double robotRadius = Math.sqrt(2) * 18.0 * 2.54 / 2.0;
-        double robotX = MessageProcessing.getRobotX();
-        double robotY = MessageProcessing.getRobotY();
-        double robotAngle = MessageProcessing.getRobotAngle();
+
+        double robotX = MessageProcessing.getInterpolatedRobotX();
+        double robotY = MessageProcessing.getInterpolatedRobotY();
+        double robotAngle = MessageProcessing.getInterpolatedRobotAngle();
 
         followRobot(robotX,robotY);
 
 
 
-        double topLeftX = robotX + (robotRadius * (Math.cos(robotAngle+Math.toRadians(45))));
-        double topLeftY = robotY + (robotRadius * (Math.sin(robotAngle+Math.toRadians(45))));
-        double topRightX = robotX + (robotRadius * (Math.cos(robotAngle-Math.toRadians(45))));
-        double topRightY = robotY + (robotRadius * (Math.sin(robotAngle-Math.toRadians(45))));
-        double bottomLeftX = robotX + (robotRadius * (Math.cos(robotAngle+Math.toRadians(135))));
-        double bottomLeftY = robotY + (robotRadius * (Math.sin(robotAngle+Math.toRadians(135))));
-        double bottomRightX = robotX + (robotRadius * (Math.cos(robotAngle-Math.toRadians(135))));
-        double bottomRightY = robotY + (robotRadius * (Math.sin(robotAngle-Math.toRadians(135))));
+        double topLeftX = robotX + (robotRadius * (Math.cos(robotAngle+ Math.toRadians(45))));
+        double topLeftY = robotY + (robotRadius * (Math.sin(robotAngle+ Math.toRadians(45))));
+        double topRightX = robotX + (robotRadius * (Math.cos(robotAngle- Math.toRadians(45))));
+        double topRightY = robotY + (robotRadius * (Math.sin(robotAngle- Math.toRadians(45))));
+        double bottomLeftX = robotX + (robotRadius * (Math.cos(robotAngle+ Math.toRadians(135))));
+        double bottomLeftY = robotY + (robotRadius * (Math.sin(robotAngle+ Math.toRadians(135))));
+        double bottomRightX = robotX + (robotRadius * (Math.cos(robotAngle- Math.toRadians(135))));
+        double bottomRightY = robotY + (robotRadius * (Math.sin(robotAngle- Math.toRadians(135))));
 
         Color c = Color.color(1.0,1.0,0.0);
         //draw the points

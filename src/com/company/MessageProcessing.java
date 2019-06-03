@@ -36,20 +36,30 @@ public class MessageProcessing {
                         if(id.equals("LP")){//log point
                             //add point
                             addPoint(splitString);
-                        }
-                        if(id.length() >= 5){
-                            if(id.substring(0,5).equals("CLEAR")){
-                                System.out.println("clearing");
-                                clear();
+                        }else{
+                            if(id.equals("CLEARLOG")){
+                                clearLogPoints();
+                            }else{
+                                if(id.length() >= 5){
+                                    if(id.substring(0,5).equals("CLEAR")){
+                                        System.out.println("clearing");
+                                        clear();
+                                    }
+                                }
                             }
                         }
-
                     }
                 }
             }
         }
     }
 
+    /**
+     * Clears all the log points
+     */
+    private void clearLogPoints() {
+        pointLog.clear();
+    }
 
 
     private static double robotX = 0;
@@ -62,15 +72,60 @@ public class MessageProcessing {
         return robotAngle;
     }
 
+
+    public static double getInterpolatedRobotX(){
+        long currTime = System.currentTimeMillis();
+        long elapsedSinceLast = currTime - lastClearTime;
+        double distanceToCover = robotX - lastRobotX;
+
+        return lastRobotX + (distanceToCover * ((double) elapsedSinceLast/lastElapsedTime));
+    }
+
+    public static double getInterpolatedRobotY(){
+        long currTime = System.currentTimeMillis();
+        long elapsedSinceLast = currTime - lastClearTime;
+        double distanceToCover = robotY - lastRobotY;
+
+        return lastRobotY + (distanceToCover * ((double) elapsedSinceLast/50));
+    }
+
+    public static double getInterpolatedRobotAngle(){
+        long currTime = System.currentTimeMillis();
+        long elapsedSinceLast = currTime - lastClearTime;
+        double distanceToCover = MyMath.AngleWrap(robotAngle - lastRobotAngle);
+
+        return lastRobotAngle + (distanceToCover * ((double) elapsedSinceLast/50));
+    }
+
+
+
+    private static double lastRobotX = 0;
+    private static double lastRobotY = 0;
+    private static double lastRobotAngle = 0;
+
+
+    private static long lastTimeUpdate = 0;
+    private static long lastElapsedTime = 0;
+
+
     /**
      * This processes the robot location and saves it's position
      * @param splitString
      */
     private void processRobotLocation(String[] splitString) {
         if(splitString.length != 4){return;}
+        lastRobotX = robotX;
+        lastRobotY = robotY;
+        lastRobotAngle = robotAngle;
+
+
         robotX = Double.parseDouble(splitString[1]);
         robotY = Double.parseDouble(splitString[2]);
         robotAngle = Double.parseDouble(splitString[3]);
+
+        lastElapsedTime = System.currentTimeMillis()-lastTimeUpdate;
+
+        lastTimeUpdate = System.currentTimeMillis();
     }
 
 
@@ -131,12 +186,39 @@ public class MessageProcessing {
 
 
 
+    private static long lastClearTime = 0;
+    private static double elapsedMillisThisUpdate = 0;
+    /**
+     * @return the elapsed time between the last two clears in milliseconds
+     */
+    public static double getElapsedMillisThisUpdate() {
+        return elapsedMillisThisUpdate;
+    }
+    /**
+     * Gets the time of the last clear
+     * @return
+     */
+    public static double getLastClearTime(){
+        return lastClearTime;
+    }
+
+
+
+
+
+
     /**
      * Clears the debug points ArrayList, occurs when the CLEAR command is send by the phone
      */
     private void clear() {
-        try {
+        long currTime = System.currentTimeMillis();
+        //calculate the elapsed time that occurred this update
+        elapsedMillisThisUpdate = currTime - lastClearTime;
+        //remember the current time
+        lastClearTime = currTime;
 
+
+        try {
             Main.drawSemaphore.acquire();
             Main.displayPoints.clear();
             Main.displayLines.clear();
@@ -144,13 +226,14 @@ public class MessageProcessing {
             Main.displayPoints.addAll(debugPoints);
             Main.displayLines.addAll(debugLines);
 
-
             debugPoints.clear();
             debugLines.clear();
+
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
         Main.drawSemaphore.release();
-
     }
+
+
 }
