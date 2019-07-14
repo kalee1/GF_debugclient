@@ -21,7 +21,7 @@ public class MessageProcessing {
             String[] splitString = message.split(",");
             String id = splitString[0];
 
-            if(id.equals("ROBOT")){
+            if(id.equals("ROBOT")|| id.equals("CAR")){
                 System.out.println("updating robot");
                 processRobotLocation(splitString);
             }else{

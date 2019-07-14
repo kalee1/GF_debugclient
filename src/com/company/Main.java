@@ -142,7 +142,7 @@ public class Main extends Application {
 
 
         Label debuggingLabel = new Label();
-        debuggingLabel.setFont(new Font("Courier New",20));
+        debuggingLabel.setFont(new Font("Courier New",16));
         debuggingLabel.textFillProperty().setValue(new Color(0,1.0,1.0,1));
         debuggingLabel.setPrefWidth(logImageView.getFitWidth()-25);
         debuggingLabel.setLayoutX(16);
@@ -210,6 +210,7 @@ public class Main extends Application {
                     System.out.println(primaryStage.getWidth());
 //                    gc.setLineWidth(10);
                     drawScreen(gc);
+                    Thread.sleep(20);
 
                 } catch (InterruptedException e) {
                     e.printStackTrace();
