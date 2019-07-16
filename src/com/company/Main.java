@@ -63,7 +63,7 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         //WINDOW STUFF//
-        primaryStage.setTitle("Gluten Free Debug Receiver v1.1");
+        primaryStage.setTitle("Should Be Gluten Free Debug Receiver v1.2");
         ////////////////
 
 
@@ -86,7 +86,8 @@ public class Main extends Application {
 
 
         ///////////////////////////////////Setup the background image/////////////////////////////////
-        Image image = new Image(new FileInputStream(System.getProperty("user.dir") + "/field dark.png"));
+//        Image image = new Image(new FileInputStream(System.getProperty("user.dir") + "/field dark.png"));
+        Image image = new Image(new FileInputStream(System.getProperty("user.dir") + "/RuckusField.jpg"));
         fieldBackgroundImageView = new ImageView();
 
         fieldBackgroundImageView.setImage(image);//set the image
@@ -125,14 +126,15 @@ public class Main extends Application {
 
         Group logGroup = new Group();
 
-        Image logImage = new Image(new FileInputStream(System.getProperty("user.dir") + "/log background.png"));
+        Image logImage = new Image(new FileInputStream(System.getProperty("user.dir") + "/logBG.png"));
         ImageView logImageView = new ImageView();
         logImageView.setImage(logImage);//set the image
 
-        logImageView.setFitHeight(logImage.getHeight()/2.5);
-        logImageView.setFitWidth(logImage.getWidth()/2.5);
+        logImageView.setFitHeight(logImage.getHeight()/1);
+        logImageView.setFitWidth(logImage.getWidth()/1);
 
         logGroup.setTranslateY(10);
+        logGroup.setTranslateX(400);
         //add the background image
         logGroup.getChildren().add(logImageView);
 
@@ -142,12 +144,13 @@ public class Main extends Application {
 
 
         Label debuggingLabel = new Label();
-        debuggingLabel.setFont(new Font("Courier New",16));
-        debuggingLabel.textFillProperty().setValue(new Color(0,1.0,1.0,1));
-        debuggingLabel.setPrefWidth(logImageView.getFitWidth()-25);
-        debuggingLabel.setLayoutX(16);
-        debuggingLabel.setLayoutY(logImageView.getFitHeight()/4.7);
-        debuggingLabel.setWrapText(true);
+        debuggingLabel.setFont(new Font("Roboto Mono",12));
+        debuggingLabel.textFillProperty().setValue(new Color(1.0,1.0,1.0,1));
+        //debuggingLabel.setPrefWidth(logImageView.getFitWidth()-25);
+        debuggingLabel.setLayoutX(6);
+        debuggingLabel.setLayoutY(23);
+        //debuggingLabel.setLayoutY(logImageView.getFitHeight()/5.7);
+        debuggingLabel.setWrapText(false);
 
 
         logGroup.getChildren().add(debuggingLabel);
@@ -204,9 +207,9 @@ public class Main extends Application {
                     debuggingLabel.setMaxWidth(scene.getWidth() * 0.2);
 
 
-                    debuggingLabel.setText("Robot Coordinates: \n" +"X: " + MessageProcessing.getRobotX()
-                    + " , Y: " + MessageProcessing.getRobotY() + "\nAngle: "
-                            + String.format("%.2f", Math.toDegrees(MessageProcessing.getRobotAngle())) + "°");
+                    debuggingLabel.setText("Coordinates: \n" +"X: " + String.format("%6.2f", MessageProcessing.getRobotX())
+                    + " , Y: " + String.format("%6.2f", MessageProcessing.getRobotY()) + "\nAngle: "
+                            + String.format("%6.2f", Math.toDegrees(MessageProcessing.getRobotAngle())) + "°");
                     System.out.println(primaryStage.getWidth());
 //                    gc.setLineWidth(10);
                     drawScreen(gc);
@@ -258,7 +261,7 @@ public class Main extends Application {
                     new floatPoint(MessageProcessing.pointLog.get(i).x,
                             MessageProcessing.pointLog.get(i).y));
             double radius = 5;
-            gc.setFill(new Color(1.0,0.0 + (double) i/MessageProcessing.pointLog.size(),0,0.9));
+            gc.setFill(new Color(1.0,0+ (double) (i)/MessageProcessing.pointLog.size(),0.2, 0.9));
 
             gc.fillOval(displayLocation.x-radius,displayLocation.y-radius,2*radius,2*radius);
 
@@ -346,7 +349,7 @@ public class Main extends Application {
 
             gc.save();//save the gc
             gc.transform(new Affine(new Rotate(Math.toDegrees(-robotAngle) + 90, bottomLeft.x, bottomLeft.y)));
-            Image image = new Image(new FileInputStream(System.getProperty("user.dir") + "/robot.png"));
+            Image image = new Image(new FileInputStream(System.getProperty("user.dir") + "/robotSBF.png"));
             gc.drawImage(image,bottomLeft.x, bottomLeft.y,width,width);
 
 
